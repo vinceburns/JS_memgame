@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div#board {
+	background:#CCC;
+	border:#999 1px solid;
+	width:800px;
+	height:700px;
+	padding:24px;
+	margin:0px auto;
+}
+div#board > div {
+	background: url(tile_bg.jpg) no-repeat;
+	border:#000 1px solid;
+	width:71px;
+	height:71px;
+	float:left;
+	margin:10px;
+	padding:20px;
+	font-size:64px;
+	cursor:pointer;
+	text-align:center;
+}
+</style>
+<script>
+var memory_array = ['1','1','2','2','3','3','4','4','5','5','6','6','7','7','8','8','9','9','a','a','b','b','c','c','d','d','e','e','f','f'];
+/* currently flipped values */
+var flipped_values = [];
+/* currently flipped id's for accessing their documents */
+var flipped_tile_ids = [];
+var matches = 0;
+
+Array.prototype.shuffle = function() {
+    var idx;
+    var cnt;
+    var temp_array = [];
+    var i = this.length
+    while (i-- > 0) {
+        /* copy the array */
+        temp_array.push(this[i]);
+        this.pop()
+        console.log("temp_array"+"length:"+temp_array.length+"value:"+temp_array[temp_array.length-1])
+    }
+
+    while (temp_array.length) {
+        idx = Math.floor(Math.random() * temp_array.length);
+        this.push(temp_array[idx])
+        temp_array.splice(idx, 1)
+        console.log("this "+"length:"+this.length+"value:"+this[this.length-1])
+        cnt++;
+    }
+    //console.log(this)
+}
+
+function playGame() {
+    matches = 0;
+    var output = '';
+    memory_array.shuffle();
+    for(var i = 0; i < memory_array.length; i++) {
+        /* build up our tiles */
+        output += '<div id="tile_'+i+'" onclick="flipTile(this,\''+memory_array[i]+'\')"></div>';
+        /*               |                   |
+                         |                   - onclick method. what we do when one of our tiles is clicked
+                         - name of our div for accessing */
+    }
+    console.log(output)
+    document.getElementById('board').innerHTML = output;
+}
+
+function flip2Back() {
+    /* helper function
+     * Flip the 2 tiles back over */
+    var tile_1 = document.getElementById(flipped_tile_ids[0]);
+    var tile_2 = document.getElementById(flipped_tile_ids[1]);
+    tile_1.style.background = 'url(tile_bg.jpg) no-repeat';
+    tile_1.innerHTML = "";
+    tile_2.style.background = 'url(tile_bg.jpg) no-repeat';
+    tile_2.innerHTML = "";
+    // Clear both arrays
+    flipped_values = [];
+    flipped_tile_ids = [];
+}
+
+function flipTile(tile,val) {
+    if(tile.innerHTML == "" && flipped_values.length < 2) {
+        /* white background */
+        tile.style.background = '#FFF';
+        /* this could be changed to a jpeg image or something. */
+        tile.innerHTML = val;
+        if(flipped_values.length == 0) {
+            console.log("len0")
+            /* no tiles currently flipped. Just flip and move on. */
+            flipped_values.push(val);
+            flipped_tile_ids.push(tile.id);
+        } else if(flipped_values.length == 1) {
+            console.log("len1")
+            /* one tile is currently flipped. check if we have a match. */
+            flipped_values.push(val);
+            flipped_tile_ids.push(tile.id);
+            if(flipped_values[0] == flipped_values[1]) {
+                console.log("A Match!")
+                /* a match! */
+                matches++;
+                // Clear both arrays
+                flipped_values = [];
+                flipped_tile_ids = [];
+                // Check to see if the whole board is cleared
+                if((matches*2) == memory_array.length) {
+                    alert("Board cleared... generating new board");
+                    /* clear the board */
+                    document.getElementById('board').innerHTML = "";
+                    playGame();
+                }
+            } else {
+                console.log("no match")
+                setTimeout(flip2Back, 700);
+            }
+        }
+    }
+}
+</script>
+</head>
+<body>
+<div id="board"></div>
+<script>setTimeout(playGame, 700);</script>
+</body>
+</html>
